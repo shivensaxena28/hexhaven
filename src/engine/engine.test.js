@@ -246,7 +246,7 @@ describe('rolling a 7: discard and robber', () => {
   it('forces players with 8+ cards to discard half (rounded down)', () => {
     const state = sevenState();
     give(state, 1, { brick: 5, ore: 4 }); // 9 cards -> discard 4
-    give(state, 2, { wool: 7 }); // 7 cards -> safe
+    give(state, 2, { sheep: 7 }); // 7 cards -> safe
     let next = reduce(state, { type: 'roll', player: 0 });
     expect(next.turn.phase).toBe('discard');
     expect(next.turn.pendingDiscards).toEqual({ 1: 4 });
@@ -273,13 +273,13 @@ describe('rolling a 7: discard and robber', () => {
     const hex = state.board.hexes.find((h) => h.id !== state.board.robberHex && h.resource !== 'desert');
     const v = Object.values(graph.vertices).find((vv) => vv.hexes.includes(hex.id));
     state.occ.vertices[v.id] = { player: 1, type: 'settlement' };
-    give(state, 1, { grain: 3 });
+    give(state, 1, { wheat: 3 });
     state = reduce(state, { type: 'roll', player: 0 });
     expect(state.turn.phase).toBe('robber');
     state = reduce(state, { type: 'move_robber', player: 0, hex: hex.id, victim: 1 });
     expect(state.board.robberHex).toBe(hex.id);
-    expect(state.players[0].resources.grain).toBe(1);
-    expect(state.players[1].resources.grain).toBe(2);
+    expect(state.players[0].resources.wheat).toBe(1);
+    expect(state.players[1].resources.wheat).toBe(2);
     expect(state.turn.phase).toBe('main');
   });
 
@@ -297,7 +297,7 @@ describe('rolling a 7: discard and robber', () => {
     const v = Object.values(graph.vertices).find((vv) => vv.hexes.includes(hex.id));
     state.occ.vertices[v.id] = { player: 1, type: 'settlement' };
     state.players[1].pieces.settlement = 4; // 1 settlement placed -> 1 VP
-    give(state, 1, { grain: 3 });
+    give(state, 1, { wheat: 3 });
     state.turn.phase = 'robber';
     expect(() => reduce(state, { type: 'move_robber', player: 0, hex: hex.id, victim: 1 }))
       .toThrow(GameError);
@@ -312,14 +312,14 @@ describe('building', () => {
     let state = completeSetup(newGame(2));
     state.turn.phase = 'main';
     const graph = graphOf(state);
-    give(state, 0, { brick: 1, lumber: 1 });
+    give(state, 0, { brick: 1, wood: 1 });
     const edges = legalRoadEdges(state, graph, 0);
     state = reduce(state, { type: 'build_road', player: 0, edge: edges[0] });
     expect(countResources(state.players[0].resources) -
       countResources(completeSetup(newGame(2)).players[0].resources)).toBe(0);
     expect(state.players[0].pieces.road).toBe(15 - 2 - 1);
     // A disconnected edge is illegal.
-    give(state, 0, { brick: 1, lumber: 1 });
+    give(state, 0, { brick: 1, wood: 1 });
     const disconnected = Object.keys(graph.edges).find(
       (e) => state.occ.edges[e] === undefined && !legalRoadEdges(state, graphOf(state), 0).includes(e),
     );
@@ -330,7 +330,7 @@ describe('building', () => {
   it('requires settlements to touch your own road network', () => {
     let state = completeSetup(newGame(2));
     state.turn.phase = 'main';
-    give(state, 0, { brick: 1, lumber: 1, wool: 1, grain: 1 });
+    give(state, 0, { brick: 1, wood: 1, sheep: 1, wheat: 1 });
     const graph = graphOf(state);
     const spot = Object.keys(graph.vertices).find((vid) =>
       !state.occ.vertices[vid]
@@ -343,7 +343,7 @@ describe('building', () => {
   it('upgrades a settlement to a city and returns the settlement piece', () => {
     let state = completeSetup(newGame(2));
     state.turn.phase = 'main';
-    give(state, 0, { grain: 2, ore: 3 });
+    give(state, 0, { wheat: 2, ore: 3 });
     const mine = Object.entries(state.occ.vertices).find(([, b]) => b.player === 0)[0];
     state = reduce(state, { type: 'build_city', player: 0, vertex: mine });
     expect(state.occ.vertices[mine].type).toBe('city');
@@ -366,7 +366,7 @@ describe('building', () => {
 describe('development cards', () => {
   it('cannot be played the turn they are bought (toggle on)', () => {
     let state = bareMain(2);
-    give(state, 0, { wool: 1, grain: 1, ore: 1 });
+    give(state, 0, { sheep: 1, wheat: 1, ore: 1 });
     state.devDeck = ['knight'];
     state = reduce(state, { type: 'buy_dev', player: 0 });
     expect(state.players[0].newDev.knight).toBe(1);
@@ -379,7 +379,7 @@ describe('development cards', () => {
 
   it('is playable immediately when the delay toggle is off', () => {
     let state = bareMain(2, { devCardDelay: false });
-    give(state, 0, { wool: 1, grain: 1, ore: 1 });
+    give(state, 0, { sheep: 1, wheat: 1, ore: 1 });
     state.devDeck = ['knight'];
     state = reduce(state, { type: 'buy_dev', player: 0 });
     expect(state.players[0].dev.knight).toBe(1);
@@ -438,8 +438,8 @@ describe('development cards', () => {
     expect(() => reduce(state, { type: 'play_dev', player: 0, card: 'yearOfPlenty', resources: ['ore', 'ore'] }))
       .toThrow(GameError);
     // The bot must not attempt it either: give it that exact situation.
-    state.players[0].resources = { brick: 0, lumber: 0, wool: 1, grain: 0, ore: 1 }; // city goal needs 2 grain 3 ore
-    state.bank.grain = 1;
+    state.players[0].resources = { brick: 0, wood: 0, sheep: 1, wheat: 0, ore: 1 }; // city goal needs 2 wheat 3 ore
+    state.bank.wheat = 1;
     const action = botAction(state, 0);
     if (action?.type === 'play_dev' && action.card === 'yearOfPlenty') {
       const wanted = {};
@@ -466,7 +466,7 @@ describe('development cards', () => {
 
   it('victory point cards count toward winning', () => {
     let state = bareMain(2, { targetVP: 3 });
-    give(state, 0, { wool: 1, grain: 1, ore: 1 });
+    give(state, 0, { sheep: 1, wheat: 1, ore: 1 });
     state.players[0].pieces.settlement = 3; // 2 settlements placed = 2 VP
     state.devDeck = ['vp'];
     state = reduce(state, { type: 'buy_dev', player: 0 });
@@ -524,7 +524,7 @@ describe('longest road', () => {
     state.turn.phase = 'main';
     // Build roads until player 0 has a 5-chain.
     for (let i = 0; i < 8 && state.longestRoad.player === null; i++) {
-      give(state, 0, { brick: 1, lumber: 1 });
+      give(state, 0, { brick: 1, wood: 1 });
       const graph = graphOf(state);
       // Extend from the far end to keep one continuous chain where possible.
       const edges = legalRoadEdges(state, graph, 0);
@@ -583,7 +583,7 @@ describe('winning', () => {
   it('ends the game when the active player reaches the target', () => {
     let state = completeSetup(newGame(2, { targetVP: 3 }));
     state.turn.phase = 'main';
-    give(state, 0, { grain: 2, ore: 3 });
+    give(state, 0, { wheat: 2, ore: 3 });
     const mine = Object.entries(state.occ.vertices).find(([, b]) => b.player === 0)[0];
     state = reduce(state, { type: 'build_city', player: 0, vertex: mine });
     expect(state.phase).toBe('ended');
@@ -602,7 +602,7 @@ describe('5-6 player special building phase', () => {
     expect(state.turn.special.queue).toEqual([1, 2, 3, 4]);
     expect(currentActor(state)).toBe(1);
     // Player 1 builds a road during the special phase.
-    give(state, 1, { brick: 1, lumber: 1 });
+    give(state, 1, { brick: 1, wood: 1 });
     const graph = graphOf(state);
     const edge = legalRoadEdges(state, graph, 1)[0];
     state = reduce(state, { type: 'build_road', player: 1, edge });

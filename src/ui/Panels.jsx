@@ -11,12 +11,13 @@ import { longestRoadLength } from '../engine/longestRoad.js';
 
 export const RES_COLORS = {
   brick: '#c4653f',
-  lumber: '#3e7c4f',
-  wool: '#7fa85a',
-  grain: '#cfa63e',
+  wood: '#3e7c4f',
+  sheep: '#7fa85a',
+  wheat: '#cfa63e',
   ore: '#8a8f9c',
 };
-export const RES_LABELS = { brick: 'Brick', lumber: 'Lumber', wool: 'Wool', grain: 'Grain', ore: 'Ore' };
+export const RES_LABELS = { brick: 'Brick', wood: 'Wood', sheep: 'Sheep', wheat: 'Wheat', ore: 'Ore' };
+export const RES_ICONS = { brick: '🧱', wood: '🪵', sheep: '🐑', wheat: '🌾', ore: '⛏️' };
 const DEV_LABELS = {
   knight: 'Knight',
   roadBuilding: 'Road Building',
@@ -28,7 +29,7 @@ const DEV_LABELS = {
 export function ResChip({ res, n }) {
   return (
     <span className="res-chip" style={{ background: RES_COLORS[res] }} title={RES_LABELS[res]}>
-      {RES_LABELS[res][0]} {n}
+      {RES_ICONS[res]} {n}
     </span>
   );
 }

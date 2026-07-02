@@ -248,6 +248,9 @@ export class LocalSession extends BaseSession {
       const raw = localStorage.getItem('hexhaven:localGame');
       if (!raw) return null;
       const state = JSON.parse(raw);
+      // Saves from before the resource rename (lumber/wool/grain) are not
+      // compatible; ignore them rather than resuming a broken game.
+      if (!state.bank || state.bank.wheat === undefined) return null;
       return state.phase && state.phase !== 'ended' ? new LocalSession({ resume: state }) : null;
     } catch {
       return null;

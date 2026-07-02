@@ -7,9 +7,9 @@ import { PLAYER_COLORS } from '../engine/constants.js';
 
 const RES_COLORS = {
   brick: '#c4653f',
-  lumber: '#3e7c4f',
-  wool: '#a8c686',
-  grain: '#e0b552',
+  wood: '#3e7c4f',
+  sheep: '#a8c686',
+  wheat: '#e0b552',
   ore: '#8a8f9c',
   desert: '#ddd0a8',
 };
