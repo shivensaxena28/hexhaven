@@ -67,8 +67,13 @@ play needs the two steps below.
 2. Open **SQL Editor → New query**, paste the contents of
    [`supabase/schema.sql`](supabase/schema.sql), and run it. This creates the
    `games` table with Row Level Security enabled.
-3. In **Project Settings → API**, copy the **Project URL** and the
-   **anon (public) key**.
+3. Copy the two values the app needs:
+   - **Project URL** — Settings → **Data API** → "Project URL". It must look
+     exactly like `https://<project-ref>.supabase.co` (no trailing path).
+   - **Publishable key** — Settings → **API Keys** → the `default` key under
+     "Publishable key" (starts with `sb_publishable_...`). On older projects
+     this is the **anon public** key (a long JWT) under Settings → API —
+     either works. Never use a **secret** / `service_role` key here.
 
 ### 4. Configure environment variables
 
@@ -84,8 +89,15 @@ VITE_SUPABASE_ANON_KEY=<SUPABASE_ANON_KEY>
 ```
 
 `.env.local` is gitignored — never commit keys or hardcode them in source.
-The anon key is safe to ship to browsers *only because* RLS is enabled; the
-`service_role` key must never appear in frontend code. Note that Hexhaven is
+The publishable/anon key is safe to ship to browsers *only because* RLS is
+enabled; a secret / `service_role` key must never appear in frontend code.
+
+> **Troubleshooting "Invalid path specified in request URL"** — the
+> `VITE_SUPABASE_URL` value is malformed. It must be exactly
+> `https://<project-ref>.supabase.co` — not the dashboard link
+> (`supabase.com/dashboard/...`) and with no `/rest/v1` or other path after
+> it. After fixing an env var, restart `npm run dev` (locally) or redeploy
+> (hosting), because Vite bakes env values in at build time. Note that Hexhaven is
 accountless by design: the RLS policies allow anonymous clients to read and
 write game rows, with the lobby code as the only shared secret. Don't reuse
 this Supabase project for data that needs stricter access control.
