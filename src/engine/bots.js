@@ -182,7 +182,10 @@ function mainPhaseAction(state, graph, idx, level) {
       const miss = Object.entries(missingFor(p, goal)).flatMap(([r, n]) => Array(n).fill(r));
       if (miss.length > 0 && miss.length <= 2) {
         const picks = [miss[0], miss[1] || miss[0]];
-        if (picks.every((r) => state.bank[r] > 0)) {
+        // Count duplicates: taking 2 of one resource needs 2 in the bank.
+        const wanted = {};
+        for (const r of picks) wanted[r] = (wanted[r] || 0) + 1;
+        if (Object.entries(wanted).every(([r, n]) => state.bank[r] >= n)) {
           return { type: 'play_dev', card: 'yearOfPlenty', resources: picks };
         }
       }
@@ -226,10 +229,10 @@ function mainPhaseAction(state, graph, idx, level) {
     && (level !== 'easy' || Math.random() < 0.4)) {
     return { type: 'buy_dev' };
   }
-  if (level !== 'easy') {
-    const trade = bankTradeChoice(state, graph, idx);
-    if (trade) return trade;
-  }
+  // All levels convert surplus at the bank — otherwise a walled-in player
+  // (no legal spots, no pieces) can never make progress again.
+  const trade = bankTradeChoice(state, graph, idx);
+  if (trade) return trade;
   return { type: 'end_turn' };
 }
 

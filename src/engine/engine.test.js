@@ -1,8 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { mulberry32 } from './rng.js';
 import { createGame, reduce, GameError, graphOf, totalVP, publicVP, tradeRatio, legalSettlementVertices, legalRoadEdges, currentActor, countResources } from './game.js';
 import { buildGraph, hexesAdjacent } from './board.js';
 import { longestRoadLength } from './longestRoad.js';
 import { nextRand } from './rng.js';
+
 import { botAction } from './bots.js';
 import { RESOURCES } from './constants.js';
 
@@ -429,6 +431,23 @@ describe('development cards', () => {
     expect(state.bank.ore).toBe(17);
   });
 
+  it('year of plenty cannot take 2 of a resource the bank has only 1 of', () => {
+    const state = bareMain(2);
+    state.players[0].dev.yearOfPlenty = 1;
+    state.bank.ore = 1;
+    expect(() => reduce(state, { type: 'play_dev', player: 0, card: 'yearOfPlenty', resources: ['ore', 'ore'] }))
+      .toThrow(GameError);
+    // The bot must not attempt it either: give it that exact situation.
+    state.players[0].resources = { brick: 0, lumber: 0, wool: 1, grain: 0, ore: 1 }; // city goal needs 2 grain 3 ore
+    state.bank.grain = 1;
+    const action = botAction(state, 0);
+    if (action?.type === 'play_dev' && action.card === 'yearOfPlenty') {
+      const wanted = {};
+      for (const r of action.resources) wanted[r] = (wanted[r] || 0) + 1;
+      for (const [r, n] of Object.entries(wanted)) expect(state.bank[r]).toBeGreaterThanOrEqual(n);
+    }
+  });
+
   it('road building places two free roads', () => {
     let state = completeSetup(newGame(2));
     state.turn.phase = 'main';
@@ -626,6 +645,16 @@ describe('turn order and permissions', () => {
 });
 
 describe('bots', () => {
+  // Bots use Math.random for variety; pin it so these full-game tests are
+  // reproducible instead of flaky.
+  beforeEach(() => {
+    const rand = mulberry32(0xbadc0de);
+    vi.spyOn(Math, 'random').mockImplementation(rand);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it.each(['easy', 'medium', 'hard'])('a full 4-bot game (%s) reaches a winner', (level) => {
     let state = createGame({
       players: mkPlayers(4).map((p) => ({ ...p, isBot: true, botLevel: level })),
