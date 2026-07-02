@@ -202,7 +202,9 @@ function hostDrive(session) {
       stamped.v += 1;
       session.setState(stamped);
       session.persist?.(stamped);
-      return; // setState re-enters hostDrive
+      session._broadcastState?.();
+      hostDrive(session); // re-enter to schedule the expiry timer below
+      return;
     }
     const remaining = state.turn.deadline - Date.now();
     session._turnTimer = setTimeout(() => {
@@ -240,6 +242,22 @@ export class LocalSession extends BaseSession {
     this.isHost = true;
     if (resume) {
       this.state = resume;
+      // A save can be from mid-bot-turn (or with a turn timer pending);
+      // restart the drive loop or the game would sit frozen until the
+      // human acted. Deferred so UI subscribers attach first.
+      setTimeout(() => hostDrive(this), 0);
+    }
+  }
+
+  // Is there a save worth offering a Resume button for?
+  static hasResumableSave() {
+    try {
+      const raw = localStorage.getItem('hexhaven:localGame');
+      if (!raw) return false;
+      const state = JSON.parse(raw);
+      return !!state.phase && state.phase !== 'ended' && state.bank?.wheat !== undefined;
+    } catch {
+      return false;
     }
   }
 

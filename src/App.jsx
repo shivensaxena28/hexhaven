@@ -71,7 +71,7 @@ export default function App() {
         onJoin={joinOnline}
         onLocal={startLocal}
         onResumeLocal={resumeLocal}
-        hasLocalSave={!!localStorage.getItem('hexhaven:localGame')}
+        hasLocalSave={LocalSession.hasResumableSave()}
         initialCode={location.hash.replace('#', '').toUpperCase() || ''}
         busy={busy}
         error={error}
