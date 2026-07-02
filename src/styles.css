@@ -334,7 +334,6 @@ input, select { font: inherit; }
 .hex-poly { stroke: rgba(255, 255, 255, 0.55); stroke-width: 0.45; }
 .token circle { fill: #f7f1df; stroke: rgba(0, 0, 0, 0.18); stroke-width: 0.25; }
 .token text { font-weight: 800; text-anchor: middle; }
-.token .pips { font-size: 2.2px; letter-spacing: 0.4px; font-weight: 400; }
 .road { stroke-linecap: round; }
 .spot {
   fill: rgba(255, 255, 255, 0.85);

@@ -18,15 +18,22 @@ const PIPS = { 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1 };
 function Token({ hex }) {
   const c = hexCenter(hex.q, hex.r);
   const hot = hex.token === 6 || hex.token === 8;
+  const pips = PIPS[hex.token] || 0;
   return (
     <g className="token">
       <circle cx={c.x} cy={c.y} r={3.1} />
-      <text x={c.x} y={c.y + 1.1} fontSize={hot ? 3.6 : 3.1} fill={hot ? '#c0392b' : '#2b2b33'}>
+      <text x={c.x} y={c.y + 0.75} fontSize={hot ? 3.3 : 2.9} fill={hot ? '#c0392b' : '#2b2b33'}>
         {hex.token}
       </text>
-      <text className="pips" x={c.x} y={c.y + 2.6} fill={hot ? '#c0392b' : '#6d6d78'}>
-        {'•'.repeat(PIPS[hex.token] || 0)}
-      </text>
+      {Array.from({ length: pips }, (_, i) => (
+        <circle
+          key={i}
+          cx={c.x + (i - (pips - 1) / 2) * 0.52}
+          cy={c.y + 1.95}
+          r={0.2}
+          fill={hot ? '#c0392b' : '#6d6d78'}
+        />
+      ))}
     </g>
   );
 }
@@ -97,6 +104,12 @@ export default function Board({
   const pointers = useRef(new Map());
   const pinch = useRef(null);
   const svgRef = useRef(null);
+  // Total pointer travel this gesture, in px. Clicks that end a pan/pinch
+  // are suppressed so releasing a drag never places a piece by accident.
+  const dragDist = useRef(0);
+  const clickGuard = (fn) => (...args) => {
+    if (dragDist.current <= 5) fn(...args);
+  };
 
   const bounds = useMemo(() => {
     const vs = Object.values(graph.vertices);
@@ -114,9 +127,13 @@ export default function Board({
   }, [graph]);
 
   // ---- pan & zoom (pointer events cover mouse and touch) ----
+  // NOTE: no setPointerCapture here. Capturing on pointerdown retargets the
+  // pointerup to the <svg>, which stops the browser from firing click events
+  // on the highlight circles/edges — real mice and fingers could never place
+  // anything. Panning without capture just stops at the board edge.
   const onPointerDown = (e) => {
-    e.currentTarget.setPointerCapture?.(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 1) dragDist.current = 0;
     if (pointers.current.size === 2) {
       const [a, b] = [...pointers.current.values()];
       pinch.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), k: view.k };
@@ -127,6 +144,7 @@ export default function Board({
     if (!prev) return;
     const cur = { x: e.clientX, y: e.clientY };
     pointers.current.set(e.pointerId, cur);
+    dragDist.current += Math.hypot(cur.x - prev.x, cur.y - prev.y);
     const rect = svgRef.current.getBoundingClientRect();
     const unitsPerPx = bounds.w / rect.width / view.k;
     if (pointers.current.size === 1) {
@@ -215,7 +233,7 @@ export default function Board({
               key={`rh${hex.id}`}
               className="robber-hex-target"
               points={pts}
-              onClick={() => onHexClick?.(hex.id)}
+              onClick={clickGuard(() => onHexClick?.(hex.id))}
             />
           );
         })}
@@ -233,7 +251,7 @@ export default function Board({
               strokeWidth={1.6}
               strokeLinecap="round"
               style={{ cursor: 'pointer' }}
-              onClick={() => onEdgeClick?.(eid)}
+              onClick={clickGuard(() => onEdgeClick?.(eid))}
             />
           );
         })}
@@ -245,7 +263,7 @@ export default function Board({
               key={`hv${vid}`}
               className="spot"
               cx={v.x} cy={v.y} r={1.7}
-              onClick={() => onVertexClick?.(vid)}
+              onClick={clickGuard(() => onVertexClick?.(vid))}
             />
           );
         })}
