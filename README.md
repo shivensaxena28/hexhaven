@@ -1,4 +1,4 @@
-# ⬡ Hexhaven
+# ⬡ HexHaven
 
 A real-time multiplayer settlement-building strategy game for 2–6 players,
 playable in any modern browser. Gather resources, build roads and towns,
@@ -7,7 +7,7 @@ dodge the robber, and race to the victory-point target.
 No accounts, no logins: one player creates a lobby and shares a 6-character
 code; everyone else enters the code and a display name.
 
-> Hexhaven is an original-themed implementation of the classic hex-tile
+> HexHaven is an original-themed implementation of the classic hex-tile
 > resource-trading game genre. All names, art, and code are original.
 
 > **No hosted demo.** There is no public instance running — the free Supabase
@@ -59,8 +59,8 @@ All dependencies are MIT/Apache-2.0 licensed.
 ### 2. Install and run locally
 
 ```bash
-git clone https://github.com/shivensaxena28/hexhaven.git
-cd hexhaven
+git clone https://github.com/shivensaxena28/HexHaven.git
+cd HexHaven
 npm install
 npm run dev
 ```
@@ -104,7 +104,7 @@ enabled; a secret / `service_role` key must never appear in frontend code.
 > `https://<project-ref>.supabase.co` — not the dashboard link
 > (`supabase.com/dashboard/...`) and with no `/rest/v1` or other path after
 > it. After fixing an env var, restart `npm run dev` (locally) or redeploy
-> (hosting), because Vite bakes env values in at build time. Note that Hexhaven is
+> (hosting), because Vite bakes env values in at build time. Note that HexHaven is
 accountless by design: the RLS policies allow anonymous clients to read and
 write game rows, with the lobby code as the only shared secret. Don't reuse
 this Supabase project for data that needs stricter access control.
@@ -133,7 +133,7 @@ complete bot-vs-bot games at each difficulty.
 - **GitHub Pages** — build in an Action (inject the two env vars from
   [GitHub Actions secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions))
   and publish `dist/`. If the site is served from a subpath
-  (`username.github.io/hexhaven`), set `base: '/hexhaven/'` in
+  (`username.github.io/HexHaven`), set `base: '/HexHaven/'` in
   `vite.config.js`.
 
 ## How the sync works

@@ -20,7 +20,7 @@ export default function Home({ onCreate, onJoin, onLocal, onResumeLocal, hasLoca
 
   return (
     <div className="home">
-      <h1>⬡ Hexhaven</h1>
+      <h1>⬡ HexHaven</h1>
       <p className="tagline">
         Settle the island: gather resources, build roads and towns,<br />
         outwit the robber, and race to victory. 2–6 players.

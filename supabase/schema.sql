@@ -1,4 +1,4 @@
--- Hexhaven database schema.
+-- HexHaven database schema.
 -- Run this in the Supabase SQL editor (Dashboard -> SQL Editor -> New query)
 -- or with the Supabase CLI: supabase db push.
 
@@ -13,7 +13,7 @@ create table if not exists public.games (
   updated_at timestamptz not null default now()
 );
 
--- Row Level Security is enabled on every table. Hexhaven has no accounts by
+-- Row Level Security is enabled on every table. HexHaven has no accounts by
 -- design (players are identified by a display name and an ephemeral client
 -- id), so the policies below deliberately allow the anon role to read and
 -- write game rows — the lobby code is the only shared secret. Delete is NOT
