@@ -10,6 +10,13 @@ code; everyone else enters the code and a display name.
 > Hexhaven is an original-themed implementation of the classic hex-tile
 > resource-trading game genre. All names, art, and code are original.
 
+> **No hosted demo.** There is no public instance running — the free Supabase
+> project this was developed against gets paused for inactivity. To try it,
+> clone and `npm install && npm run dev`: **local hot-seat mode and the AI bots
+> work immediately with no Supabase project and no configuration.** Online
+> multiplayer needs your own free Supabase project (steps 3–4 below), and
+> `npm test` runs the full rules-engine suite with no setup at all.
+
 ## Features
 
 - **Full base ruleset** — snake-draft setup, dice production, robber +
